@@ -1,0 +1,50 @@
+Menu="Utilities"
+Title="Time Machine Discovery"
+Icon="history"
+---
+<?php
+/* Buttons post to /update.php, not back to this page: a .page is rendered by
+   the webGUI template and does not handle POSTs, so posting to itself yields
+   a blank document. */
+
+$rc      = '/plugins/timemachine-discovery/scripts/rc.timemachine-discovery';
+$status  = (string) shell_exec('/usr/local/emhttp' . $rc . ' status 2>&1');
+$enabled = (bool) preg_match('/^advertising:\s*enabled/m', $status);
+$csrf    = $var['csrf_token'] ?? '';
+
+function tmd_button($rc, $csrf, $verb, $label) {
+  echo '<form method="POST" action="/update.php" target="progressFrame"'
+     . ' style="display:inline-block;margin-right:8px"'
+     . ' onsubmit="setTimeout(function(){location.reload()},1500)">'
+     . '<input type="hidden" name="#command" value="' . htmlspecialchars($rc, ENT_QUOTES) . '">'
+     . '<input type="hidden" name="#arg[1]" value="' . htmlspecialchars($verb, ENT_QUOTES) . '">'
+     . '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($csrf, ENT_QUOTES) . '">'
+     . '<button type="submit">' . htmlspecialchars($label, ENT_QUOTES) . '</button>'
+     . '</form>';
+}
+?>
+
+<p>
+Unraid publishes <code>_smb._tcp</code> for every exported share but never
+<code>_adisk._tcp</code>, which is the record Time Machine reads. This plugin
+derives the missing record from the running Samba config and publishes it under
+the same mDNS instance name, which is what Apple requires for the two to pair.
+</p>
+
+<p>
+Shares are picked up automatically when the array starts and whenever share
+settings change. <b>Rescan now</b> only matters if you want to apply a change
+without waiting for either.
+</p>
+
+<?php if ($enabled) { ?>
+  <p>Advertisement is <b>enabled</b>.</p>
+  <?php tmd_button($rc, $csrf, 'disable', 'Disable'); ?>
+  <?php tmd_button($rc, $csrf, 'start', 'Rescan now'); ?>
+<?php } else { ?>
+  <p>Advertisement is <b>disabled</b>. No <code>_adisk._tcp</code> record is
+  published, and Time Machine will not offer this server.</p>
+  <?php tmd_button($rc, $csrf, 'enable', 'Enable'); ?>
+<?php } ?>
+
+<pre style="white-space:pre-wrap"><?php echo htmlspecialchars($status, ENT_QUOTES); ?></pre>

@@ -1,0 +1,29 @@
+<Plugin>
+  <Name>Time Machine Discovery</Name>
+
+  <Overview>
+    Makes Unraid shares exported as "Yes (Time Machine)" actually appear in the
+    macOS Time Machine disk picker.
+
+    Time Machine needs the server to advertise an _adisk._tcp mDNS record
+    alongside _smb._tcp. Unraid publishes only the latter, so a Time Machine
+    share can be fully visible in Finder and completely absent from Time
+    Machine. This plugin reads the running Samba config and publishes the
+    missing record, following share changes automatically and leaving Unraid's
+    own avahi file untouched.
+  </Overview>
+
+  <!-- Must match the pluginURL in the .plg exactly. -->
+  <PluginURL>https://raw.githubusercontent.com/externl/unraid-timemachine-discovery/main/timemachine-discovery.plg</PluginURL>
+
+  <PluginAuthor>externl</PluginAuthor>
+
+  <!-- Ignored while the .plg carries a support attribute; kept explicit. -->
+  <Support>https://github.com/externl/unraid-timemachine-discovery/issues</Support>
+  <Project>https://github.com/externl/unraid-timemachine-discovery</Project>
+  <ReadMe>https://raw.githubusercontent.com/externl/unraid-timemachine-discovery/main/README.md</ReadMe>
+
+  <Category>Tools:System</Category>
+  <IconFA>history</IconFA>
+  <License>MIT</License>
+</Plugin>

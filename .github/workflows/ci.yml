@@ -1,0 +1,82 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PAYLOAD: source/timemachine-discovery/usr/local/emhttp/plugins/timemachine-discovery
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Lint shell
+        run: shellcheck pkg_build.sh "$PAYLOAD"/scripts/rc.* "$PAYLOAD"/event/*
+
+      - name: Lint settings page
+        run: sed '1,/^---$/d' "$PAYLOAD"/TimeMachineDiscovery.page | php -l
+
+      # Nothing here rebuilds; check that whoever did committed the result.
+      # A stale package means every install fails its checksum.
+      - name: Verify the committed package matches source/
+        run: |
+          plg=timemachine-discovery.plg
+          version=$(sed -n 's/.*<!ENTITY version *"\([^"]*\)".*/\1/p' $plg)
+          sha=$(sed -n 's/.*<!ENTITY sha256 *"\([^"]*\)".*/\1/p' $plg)
+          pkg=archive/timemachine-discovery-${version}-x86_64-1.txz
+
+          if [ "$(sha256sum "$pkg" | cut -d' ' -f1)" != "$sha" ]; then
+            echo "::error::$plg declares sha256 $sha but $pkg does not match; re-run ./pkg_build.sh"
+            exit 1
+          fi
+
+          # version and sha256 are stamped, the changelog is hand-written.
+          top=$(grep -m1 '^### ' $plg)
+          if [ "$top" != "### $version" ]; then
+            echo "::error::newest changelog entry is '$top', expected '### $version'"
+            exit 1
+          fi
+
+          work=$(mktemp -d)
+          tar -xpf "$pkg" -C "$work"
+          diff -r source/timemachine-discovery "$work" \
+            || { echo "::error::$pkg is stale; re-run ./pkg_build.sh and commit it"; exit 1; }
+
+          # diff ignores modes, and an event hook without its exec bit never runs.
+          diff <(cd source/timemachine-discovery && find . -type f -perm -u+x | sort) \
+               <(cd "$work" && find . -type f -perm -u+x | sort) \
+            || { echo "::error::executable bits differ between source/ and the package"; exit 1; }
+
+      # Community Applications requires the wrapper's PluginURL to match the
+      # .plg exactly. The .plg builds its own from entities, so this needs a
+      # real XML parse rather than a grep.
+      - name: Validate Community Applications metadata
+        run: |
+          python3 - <<'EOF'
+          import glob, re, sys, xml.dom.minidom
+
+          for f in ['ca_profile.xml', *glob.glob('plugins/*.xml')]:
+              xml.dom.minidom.parse(f)
+              print(f'ok: {f}')
+
+          want = xml.dom.minidom.parse('timemachine-discovery.plg')
+          want = want.documentElement.getAttribute('pluginURL')
+          m = re.search(r'<PluginURL>\s*(\S+?)\s*</PluginURL>',
+                        open('plugins/timemachine-discovery.xml').read())
+          if not m:
+              sys.exit('error: CA wrapper has no PluginURL')
+          if m.group(1) != want:
+              sys.exit(f'error: CA wrapper PluginURL {m.group(1)!r} != .plg pluginURL {want!r}')
+          print('ok: CA wrapper PluginURL matches the manifest')
+          EOF

@@ -1,0 +1,2 @@
+# Built packages are binary: never normalize line endings, never try to diff.
+*.txz binary

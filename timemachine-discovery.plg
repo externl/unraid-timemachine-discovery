@@ -1,0 +1,83 @@
+<?xml version="1.0" standalone="yes"?>
+<!DOCTYPE PLUGIN [
+<!ENTITY name      "timemachine-discovery">
+<!ENTITY author    "externl">
+<!ENTITY version   "2026.08.19">
+<!ENTITY sha256    "f40bc299085706351f4fdb2365a63b046c725d8e2b47f945452280bb8c2b183b">
+<!ENTITY launch    "Settings/TimeMachineDiscovery">
+<!ENTITY plugdir   "/usr/local/emhttp/plugins/&name;">
+<!ENTITY boot      "/boot/config/plugins/&name;">
+<!ENTITY github    "externl/unraid-timemachine-discovery">
+<!ENTITY gitURL    "https://raw.githubusercontent.com/&github;/main">
+<!ENTITY pluginURL "&gitURL;/&name;.plg">
+]>
+
+<PLUGIN name="&name;"
+        author="&author;"
+        version="&version;"
+        launch="&launch;"
+        pluginURL="&pluginURL;"
+        support="https://github.com/&github;/issues"
+        icon="history"
+        min="6.12.0">
+
+<CHANGES>
+### 2026.08.19
+- Initial release. Publishes `_adisk._tcp` for shares exported as
+  "Yes (Time Machine)", which Unraid's own avahi generator omits.
+- Settings page under Settings -> User Utilities, with a switch to turn the
+  advertisement off.
+- Reacts to array start and share changes via Unraid's event hooks.
+</CHANGES>
+
+<!-- Kept on the flash so every boot reinstalls it without a download,
+     because /usr/local/emhttp is a RAM filesystem. -->
+<FILE Name="&boot;/&name;-&version;-x86_64-1.txz" Run="upgradepkg --install-new --reinstall">
+<URL>&gitURL;/archive/&name;-&version;-x86_64-1.txz</URL>
+<SHA256>&sha256;</SHA256>
+</FILE>
+
+<!-- The plugin manager skips a FILE whose target exists, so this is written
+     once and the user's choice survives upgrades. -->
+<FILE Name="&boot;/&name;.cfg">
+<INLINE>
+SERVICE="enable"
+</INLINE>
+</FILE>
+
+<FILE Run="/bin/bash">
+<INLINE>
+mkdir -p &boot;
+
+# Drop packages left by older versions.
+rm -f $(ls &boot;/&name;-*.txz 2>/dev/null | grep -vF '&version;')
+
+&plugdir;/scripts/rc.&name; start
+
+# Runs again on every boot, so stay quiet unless this is a real install
+# or upgrade.
+if [ "$(cat &boot;/installed-version 2>/dev/null)" != "&version;" ]; then
+  echo "&version;" > &boot;/installed-version
+  echo ""
+  echo "----------------------------------------------------"
+  echo " &name; &version; installed."
+  echo ""
+  &plugdir;/scripts/rc.&name; status
+  echo "----------------------------------------------------"
+  echo ""
+fi
+</INLINE>
+</FILE>
+
+<FILE Run="/bin/bash" Method="remove">
+<INLINE>
+&plugdir;/scripts/rc.&name; stop
+removepkg &name;-&version;-x86_64-1
+rm -f /tmp/plugins/&name;.plg
+rm -rf &plugdir;
+rm -rf &boot;
+echo "&name; removed."
+</INLINE>
+</FILE>
+
+</PLUGIN>

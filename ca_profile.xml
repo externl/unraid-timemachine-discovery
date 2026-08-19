@@ -1,0 +1,9 @@
+<CommunityApplications>
+  <Profile>
+**Time Machine Discovery** makes Unraid shares exported as *Yes (Time Machine)*
+show up in the macOS Time Machine disk picker.
+  </Profile>
+
+  <Forum>https://github.com/externl/unraid-timemachine-discovery/issues</Forum>
+  <WebPage>https://github.com/externl/unraid-timemachine-discovery</WebPage>
+</CommunityApplications>
