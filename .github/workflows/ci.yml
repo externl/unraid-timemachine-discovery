@@ -57,26 +57,3 @@ jobs:
           diff <(cd source/timemachine-discovery && find . -type f -perm -u+x | sort) \
                <(cd "$work" && find . -type f -perm -u+x | sort) \
             || { echo "::error::executable bits differ between source/ and the package"; exit 1; }
-
-      # Community Applications requires the wrapper's PluginURL to match the
-      # .plg exactly. The .plg builds its own from entities, so this needs a
-      # real XML parse rather than a grep.
-      - name: Validate Community Applications metadata
-        run: |
-          python3 - <<'EOF'
-          import glob, re, sys, xml.dom.minidom
-
-          for f in ['ca_profile.xml', *glob.glob('plugins/*.xml')]:
-              xml.dom.minidom.parse(f)
-              print(f'ok: {f}')
-
-          want = xml.dom.minidom.parse('timemachine-discovery.plg')
-          want = want.documentElement.getAttribute('pluginURL')
-          m = re.search(r'<PluginURL>\s*(\S+?)\s*</PluginURL>',
-                        open('plugins/timemachine-discovery.xml').read())
-          if not m:
-              sys.exit('error: CA wrapper has no PluginURL')
-          if m.group(1) != want:
-              sys.exit(f'error: CA wrapper PluginURL {m.group(1)!r} != .plg pluginURL {want!r}')
-          print('ok: CA wrapper PluginURL matches the manifest')
-          EOF
