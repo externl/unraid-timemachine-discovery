@@ -23,7 +23,7 @@
   <Project>https://github.com/externl/unraid-timemachine-discovery</Project>
   <ReadMe>https://raw.githubusercontent.com/externl/unraid-timemachine-discovery/main/README.md</ReadMe>
 
-  <Category>Tools:System</Category>
+  <Category>Backup:</Category>
   <IconFA>history</IconFA>
   <License>MIT</License>
 </Plugin>
