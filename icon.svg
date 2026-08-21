@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="t">
+  <title id="t">Time Machine Discovery</title>
+
+  <defs>
+    <radialGradient id="bg" cx="35%" cy="28%" r="85%">
+      <stop offset="0" stop-color="#26313f"/>
+      <stop offset="1" stop-color="#0e151d"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Self-contained badge, so the mark reads on light and dark backgrounds. -->
+  <circle cx="256" cy="256" r="256" fill="url(#bg)"/>
+
+  <!-- mDNS advertisement: arcs radiating from the clock. -->
+  <g fill="none" stroke="#5ec2f0" stroke-width="18" stroke-linecap="round">
+    <path d="M 302 150 A 150 150 0 0 1 302 362" opacity="0.95"/>
+    <path d="M 329 123 A 188 188 0 0 1 329 389" opacity="0.6"/>
+    <path d="M 356 96  A 226 226 0 0 1 356 416" opacity="0.32"/>
+  </g>
+
+  <!-- Clock: closed ring and hands at 10:10, which reads as a clock instantly. -->
+  <circle cx="196" cy="256" r="112" fill="none" stroke="#f2f6fa" stroke-width="22"/>
+  <g stroke="#f2f6fa" stroke-linecap="round" fill="none">
+    <path d="M 196 256 L 146 227" stroke-width="17"/>
+    <path d="M 196 256 L 238 183" stroke-width="14"/>
+  </g>
+  <circle cx="196" cy="256" r="13" fill="#f2f6fa"/>
+</svg>
