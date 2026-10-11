@@ -2,8 +2,8 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "timemachine-discovery">
 <!ENTITY author    "externl">
-<!ENTITY version   "2026.08.19">
-<!ENTITY sha256    "f40bc299085706351f4fdb2365a63b046c725d8e2b47f945452280bb8c2b183b">
+<!ENTITY version   "2026.10.11">
+<!ENTITY sha256    "94996704db5605d2e40f253b7572bd729c93ef0914c9b7951f8e8218e1d042d7">
 <!ENTITY launch    "Settings/TimeMachineDiscovery">
 <!ENTITY plugdir   "/usr/local/emhttp/plugins/&name;">
 <!ENTITY boot      "/boot/config/plugins/&name;">
@@ -22,6 +22,9 @@
         min="6.12.0">
 
 <CHANGES>
+### 2026.10.11
+- Plugins page shows the plugin's name and a one-line description.
+
 ### 2026.08.19
 - Initial release. Publishes `_adisk._tcp` for shares exported as
   "Yes (Time Machine)", which Unraid's own avahi generator omits.
