@@ -43,6 +43,24 @@ The settings page shows what is being advertised and can turn the
 advertisement off, which withdraws the record. To check from a Mac, run
 `dns-sd -B _adisk._tcp`.
 
+## Troubleshooting
+
+If the server's mDNS name picks up a numeric suffix, such as `Tower-2` instead
+of `Tower`, Time Machine loses the destination. Another mDNS responder on the
+server is claiming the same host name, usually a container on host networking
+that runs its own avahi daemon. Each time Unraid's avahi restarts, such as on
+array start, it gives up the name and takes the next free one.
+
+The suffix shows on the settings page under **live mDNS advertisement**, and on
+a Mac in `dns-sd -B _adisk._tcp`.
+
+Turn off the container's avahi daemon (for Homebridge, set `ENABLE_AVAHI=0`),
+then reclaim the name:
+
+```bash
+/etc/rc.d/rc.avahidaemon restart
+```
+
 ## Build
 
 ```bash
